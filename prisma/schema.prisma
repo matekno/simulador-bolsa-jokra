@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Equipo {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  saldo       Float
+  integrantes String
+  compras     Compra[]
+}
+
+model Compra {
+  id           Int      @id @default(autoincrement())
+  equipoId     Int
+  equipo       Equipo   @relation(fields: [equipoId], references: [id])
+  symbolId     Int
+  symbol       Symbol   @relation(fields: [symbolId], references: [id])
+  precioActual Float
+  cantidad     Int
+  instanteId   Int
+  instante     Instante @relation(fields: [instanteId], references: [id])
+  total        Float
+  createdAt    DateTime @default(now())
+}
+
+model Instante {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now())
+  precios   Precio[]
+  Compra    Compra[]
+}
+
+model Precio {
+  id         Int      @id @default(autoincrement())
+  instanteId Int
+  instante   Instante @relation(fields: [instanteId], references: [id])
+  symbolId   Int
+  symbol     Symbol   @relation(fields: [symbolId], references: [id])
+  precio     Float
+}
+
+model Symbol {
+  id      Int      @id @default(autoincrement())
+  nombre  String   @unique
+  compras Compra[]
+  precios Precio[]
+}
