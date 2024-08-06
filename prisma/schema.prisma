@@ -13,7 +13,7 @@ model Equipo {
   id          Int      @id @default(autoincrement())
   nombre      String
   saldo       Float
-  integrantes String
+  integrantes String[] 
   compras     Compra[]
 }
 
@@ -34,6 +34,7 @@ model Compra {
 model Instante {
   id        Int      @id @default(autoincrement())
   timestamp DateTime @default(now())
+  isCurrent Boolean  @default(false)
   precios   Precio[]
   Compra    Compra[]
 }

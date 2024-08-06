@@ -5,9 +5,9 @@ const Admin = () => {
   const [equipos, setEquipos] = useState([]);
   const [instantes, setInstantes] = useState([]);
   const [symbols, setSymbols] = useState([]);
+  const [currentInstanteId, setCurrentInstanteId] = useState(null);
   const [equipoId, setEquipoId] = useState('');
   const [symbolId, setSymbolId] = useState('');
-  const [instanteId, setInstanteId] = useState('');
   const [precioActual, setPrecioActual] = useState('');
   const [cantidad, setCantidad] = useState('');
   const [mensaje, setMensaje] = useState('');
@@ -19,24 +19,26 @@ const Admin = () => {
       setEquipos(data.equipos);
       setInstantes(data.instantes);
       setSymbols(data.symbols);
+      const currentInstante = data.instantes.find(inst => inst.isCurrent);
+      setCurrentInstanteId(currentInstante ? currentInstante.id : null);
     };
     fetchInitialData();
   }, []);
 
   useEffect(() => {
     const fetchPrecio = async () => {
-      if (instanteId && symbolId) {
-        const res = await fetch(`/api/precios?instanteId=${instanteId}&symbolId=${symbolId}`);
+      if (currentInstanteId && symbolId) {
+        const res = await fetch(`/api/precios?instanteId=${currentInstanteId}&symbolId=${symbolId}`);
         const data = await res.json();
         if (data.precio) {
-          setPrecioActual(data.precio);
+          setPrecioActual(data.precio); 
         } else {
-          setPrecioActual('');
+          setPrecioActual("");
         }
       }
     };
     fetchPrecio();
-  }, [instanteId, symbolId]);
+  }, [currentInstanteId, symbolId]);
 
   const handleCompra = async () => {
     const equipo = equipos.find((e) => e.id === parseInt(equipoId));
@@ -53,7 +55,7 @@ const Admin = () => {
           symbolId: parseInt(symbolId),
           precioActual: parseFloat(precioActual),
           cantidad: parseInt(cantidad),
-          instanteId: parseInt(instanteId),
+          instanteId: parseInt(currentInstanteId),
           total,
         }),
       });
@@ -68,9 +70,42 @@ const Admin = () => {
     }
   };
 
+  const handleChangeInstante = async (instanteId) => {
+    try {
+      const res = await fetch('/api/updateInstante', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ instanteId: parseInt(instanteId, 10) }),
+      });
+  
+      const data = await res.json();
+      if (res.ok) {
+        setCurrentInstanteId(instanteId);
+        setMensaje('Instante actualizado correctamente');
+      } else {
+        setMensaje(data.error || 'Error al actualizar el instante');
+      }
+    } catch (error) {
+      setMensaje('Error al actualizar el instante');
+    }
+  };
+
   return (
     <div>
       <h1>Administración</h1>
+      <label>
+        Instante actual:
+        <select onChange={(e) => handleChangeInstante(e.target.value)} value={currentInstanteId}>
+          {instantes.map((instante) => (
+            <option key={instante.id} value={instante.id}>
+              {instante.id}
+            </option>
+          ))}
+        </select>
+      </label>
+      <br />
       <label>
         Equipo Inversor:
         <select onChange={(e) => setEquipoId(e.target.value)} value={equipoId}>
@@ -90,18 +125,6 @@ const Admin = () => {
           {symbols.map((symbol) => (
             <option key={symbol.id} value={symbol.id}>
               {symbol.nombre}
-            </option>
-          ))}
-        </select>
-      </label>
-      <br />
-      <label>
-        Instante:
-        <select onChange={(e) => setInstanteId(e.target.value)} value={instanteId}>
-          <option value="">Seleccione un instante</option>
-          {instantes.map((instante) => (
-            <option key={instante.id} value={instante.id}>
-              {instante.id}
             </option>
           ))}
         </select>
