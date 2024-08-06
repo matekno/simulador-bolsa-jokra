@@ -16,6 +16,19 @@ export async function GET(req) {
       });
     }
 
+    // Obtener los precios actuales de todos los símbolos en el instante actual
+    const preciosActuales = await prisma.precio.findMany({
+      where: { instanteId: currentInstante.id },
+      include: { symbol: true },
+    });
+
+    // Crear un mapa de precios actuales por símbolo
+    const preciosMap = preciosActuales.reduce((acc, precio) => {
+      acc[precio.symbolId] = precio.precio;
+      return acc;
+    }, {});
+
+    // Obtener los equipos y sus compras
     const equipos = await prisma.equipo.findMany({
       include: {
         compras: {
@@ -24,7 +37,7 @@ export async function GET(req) {
       },
     });
 
-    return new Response(JSON.stringify({ equipos, currentInstante }), {
+    return new Response(JSON.stringify({ equipos, currentInstante, preciosMap }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

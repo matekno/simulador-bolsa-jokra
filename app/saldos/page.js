@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 const Saldos = () => {
   const [equipos, setEquipos] = useState([]);
   const [currentInstante, setCurrentInstante] = useState(null);
+  const [preciosMap, setPreciosMap] = useState({});
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ const Saldos = () => {
         if (response.ok) {
           setEquipos(data.equipos || []);
           setCurrentInstante(data.currentInstante);
+          setPreciosMap(data.preciosMap || {});
         } else {
           setError(data.error || 'Error al obtener los datos');
         }
@@ -27,7 +29,8 @@ const Saldos = () => {
 
   const calcularValorTotal = (equipo) => {
     const valorInstrumentos = equipo.compras.reduce((acc, compra) => {
-      return acc + (compra.cantidad * compra.precioActual);
+      const precioActual = preciosMap[compra.symbolId] || compra.precioActual;
+      return acc + (compra.cantidad * precioActual);
     }, 0);
     return equipo.saldo + valorInstrumentos;
   };
@@ -51,7 +54,7 @@ const Saldos = () => {
             <ul>
               {equipo.compras.map((compra) => (
                 <li key={compra.id}>
-                  {compra.symbol.nombre}: {compra.cantidad} unidades a ${compra.precioActual.toFixed(2)} cada una
+                  {compra.symbol.nombre}: {compra.cantidad} unidades a ${preciosMap[compra.symbolId]?.toFixed(2) || compra.precioActual.toFixed(2)} cada una
                 </li>
               ))}
             </ul>
