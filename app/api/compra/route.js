@@ -26,8 +26,14 @@ export async function POST(req) {
             },
         });
 
-        return new Response(JSON.stringify(compra), { status: 200 });
+        return new Response(JSON.stringify(compra), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
     } catch (error) {
-        return new Response(JSON.stringify({ error: 'Error al realizar la compra' }), { status: 500 });
+        return new Response(JSON.stringify({ error: 'Error al realizar la compra' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 }
