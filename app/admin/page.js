@@ -1,10 +1,15 @@
+// File: pages/admin.js
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import LoginForm from './components/LoginForm';
+import InstanteUpdater from './components/InstanteUpdater';
+import CompraForm from './components/CompraForm';
+import VentaForm from './components/VentaForm';
+import SaldoForm from './components/SaldoForm';
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
   const [equipos, setEquipos] = useState([]);
   const [instantes, setInstantes] = useState([]);
   const [symbols, setSymbols] = useState([]);
@@ -59,48 +64,34 @@ const Admin = () => {
     fetchPrecio();
   }, [currentInstanteId, symbolId]);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === '123') {
-      setIsAuthenticated(true);
-    } else {
-      setMensaje('Contraseña incorrecta');
-    }
+  const handleLogin = () => {
+    setIsAuthenticated(true);
   };
 
-  const handleAgregarSaldo = async () => {
+  const handleChangeInstante = async (instanteId) => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/addSaldo', {
+      const res = await fetch('/api/updateInstante', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          equipoId: parseInt(equipoId),
-          cantidad: parseFloat(cantidad),
-        }),
+        body: JSON.stringify({ instanteId: parseInt(instanteId, 10) }),
       });
-  
+
       const data = await res.json();
       if (res.ok) {
-        setMensaje(`Saldo actualizado con éxito. Nuevo saldo: $${data.saldo.toFixed(2)}`);
-        // Actualizar el saldo localmente
-        setEquipos((prevEquipos) =>
-          prevEquipos.map((equipo) =>
-            equipo.id === parseInt(equipoId) ? { ...equipo, saldo: data.saldo } : equipo
-          )
-        );
+        setCurrentInstanteId(instanteId);
+        setMensaje('Instante actualizado correctamente');
       } else {
-        setMensaje(data.error || 'Error al actualizar el saldo');
+        setMensaje(data.error || 'Error al actualizar el instante');
       }
     } catch (error) {
-      setMensaje('Error al actualizar el saldo');
+      setMensaje('Error al actualizar el instante');
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   const handleCompra = async () => {
     setIsLoading(true);
@@ -168,60 +159,40 @@ const Admin = () => {
     }
   };
 
-
-  const handleChangeInstante = async (instanteId) => {
+  const handleAgregarSaldo = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/updateInstante', {
+      const res = await fetch('/api/addSaldo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ instanteId: parseInt(instanteId, 10) }),
+        body: JSON.stringify({
+          equipoId: parseInt(equipoId),
+          cantidad: parseFloat(cantidad),
+        }),
       });
-
+  
       const data = await res.json();
       if (res.ok) {
-        setCurrentInstanteId(instanteId);
-        setMensaje('Instante actualizado correctamente');
+        setMensaje(`Saldo actualizado con éxito. Nuevo saldo: $${data.saldo.toFixed(2)}`);
+        setEquipos((prevEquipos) =>
+          prevEquipos.map((equipo) =>
+            equipo.id === parseInt(equipoId) ? { ...equipo, saldo: data.saldo } : equipo
+          )
+        );
       } else {
-        setMensaje(data.error || 'Error al actualizar el instante');
+        setMensaje(data.error || 'Error al actualizar el saldo');
       }
     } catch (error) {
-      setMensaje('Error al actualizar el instante');
+      setMensaje('Error al actualizar el saldo');
     } finally {
       setIsLoading(false);
     }
   };
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-96">
-          <h1 className="text-2xl font-bold mb-4 text-center">Administración</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
-              Iniciar sesión
-            </button>
-          </form>
-          {mensaje && <p className="mt-4 text-red-500 text-center">{mensaje}</p>}
-        </div>
-      </div>
-    );
+    return <LoginForm onLogin={handleLogin} />;
   }
 
   return (
@@ -233,209 +204,46 @@ const Admin = () => {
       )}
       <h1 className="text-3xl font-bold mb-8 text-center">Administración</h1>
 
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Actualizar Instante</h2>
-        <div className="flex items-center space-x-4">
-          <label className="block">
-            <span className="text-gray-700">Instante actual:</span>
-            <select
-              onChange={(e) => handleChangeInstante(e.target.value)}
-              value={currentInstanteId}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            >
-              {instantes.map((instante) => (
-                <option key={instante.id} value={instante.id}>
-                  {instante.id}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            onClick={() => handleChangeInstante(currentInstanteId)}
-            className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-          >
-            Actualizar
-          </button>
-        </div>
-      </div>
+      <InstanteUpdater
+        instantes={instantes}
+        currentInstanteId={currentInstanteId}
+        onChangeInstante={handleChangeInstante}
+      />
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Realizar Compra</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Equipo Inversor:</span>
-              <select
-                onChange={(e) => setEquipoId(e.target.value)}
-                value={equipoId}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              >
-                <option value="">Seleccione un equipo</option>
-                {equipos.map((equipo) => (
-                  <option key={equipo.id} value={equipo.id}>
-                    {equipo.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Acción a comprar:</span>
-              <select
-                onChange={(e) => setSymbolId(e.target.value)}
-                value={symbolId}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              >
-                <option value="">Seleccione una acción</option>
-                {symbols.map((symbol) => (
-                  <option key={symbol.id} value={symbol.id}>
-                    {symbol.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Precio actual:</span>
-              <input
-                type="text"
-                value={precioActual}
-                readOnly
-                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Cantidad:</span>
-              <input
-                type="number"
-                value={cantidad}
-                onChange={(e) => setCantidad(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </label>
-          </div>
-        </div>
-        <button
-          onClick={handleCompra}
-          className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        >
-          Realizar Compra
-        </button>
-      </div>
+      <CompraForm
+        equipos={equipos}
+        symbols={symbols}
+        equipoId={equipoId}
+        symbolId={symbolId}
+        precioActual={precioActual}
+        cantidad={cantidad}
+        onEquipoChange={setEquipoId}
+        onSymbolChange={setSymbolId}
+        onCantidadChange={setCantidad}
+        onCompra={handleCompra}
+      />
 
-      <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-        <h2 className="text-xl font-semibold mb-4">Realizar Venta</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Equipo Inversor:</span>
-              <select
-                onChange={(e) => setEquipoId(e.target.value)}
-                value={equipoId}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              >
-                <option value="">Seleccione un equipo</option>
-                {equipos.map((equipo) => (
-                  <option key={equipo.id} value={equipo.id}>
-                    {equipo.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Acción a vender:</span>
-              <select
-                onChange={(e) => setSymbolId(e.target.value)}
-                value={symbolId}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              >
-                <option value="">Seleccione una acción</option>
-                {symbols.map((symbol) => (
-                  <option key={symbol.id} value={symbol.id}>
-                    {symbol.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Precio actual:</span>
-              <input
-                type="text"
-                value={precioActual}
-                readOnly
-                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Cantidad a vender:</span>
-              <input
-                type="number"
-                value={cantidadVenta}
-                onChange={(e) => setCantidadVenta(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </label>
-          </div>
-        </div>
-        <button
-          onClick={handleVenta}
-          className="mt-4 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-        >
-          Realizar Venta
-        </button>
-      </div>
+      <VentaForm
+        equipos={equipos}
+        symbols={symbols}
+        equipoId={equipoId}
+        symbolId={symbolId}
+        precioActual={precioActual}
+        cantidadVenta={cantidadVenta}
+        onEquipoChange={setEquipoId}
+        onSymbolChange={setSymbolId}
+        onCantidadVentaChange={setCantidadVenta}
+        onVenta={handleVenta}
+      />
 
-      <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-        <h2 className="text-xl font-semibold mb-4">Agregar Saldo</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Equipo:</span>
-              <select
-                onChange={(e) => setEquipoId(e.target.value)}
-                value={equipoId}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              >
-                <option value="">Seleccione un equipo</option>
-                {equipos.map((equipo) => (
-                  <option key={equipo.id} value={equipo.id}>
-                    {equipo.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label className="block">
-              <span className="text-gray-700">Cantidad a agregar:</span>
-              <input
-                type="number"
-                value={cantidad}
-                onChange={(e) => setCantidad(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </label>
-          </div>
-        </div>
-        <button
-          onClick={handleAgregarSaldo}
-          className="mt-4 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-        >
-          Agregar Saldo
-        </button>
-      </div>
-
-
+      <SaldoForm
+        equipos={equipos}
+        equipoId={equipoId}
+        cantidad={cantidad}
+        onEquipoChange={setEquipoId}
+        onCantidadChange={setCantidad}
+        onAgregarSaldo={handleAgregarSaldo}
+      />
 
       {mensaje && (
         <div className="mt-4 p-4 rounded-md bg-yellow-100 border border-yellow-400 text-yellow-700">
