@@ -31,6 +31,23 @@ const Saldos = () => {
     fetchEquipos();
   }, []);
 
+  const agruparCompras = (compras) => {
+    const agrupadas = {};
+
+    compras.forEach((compra) => {
+      const key = `${compra.symbolId}-${compra.instanteId}`;
+      if (!agrupadas[key]) {
+        agrupadas[key] = {
+          ...compra,
+          cantidad: 0,
+        };
+      }
+      agrupadas[key].cantidad += compra.cantidad;
+    });
+
+    return Object.values(agrupadas);
+  };
+
   const calcularValorTotal = (equipo) => {
     const valorInstrumentos = equipo.compras.reduce((acc, compra) => {
       const precioActual = preciosMap[compra.symbolId] || compra.precioActual;
@@ -79,8 +96,8 @@ const Saldos = () => {
                 <div className="mt-4">
                   <h3 className="text-sm font-medium text-gray-500">Instrumentos</h3>
                   <ul className="mt-2 divide-y divide-gray-200">
-                    {equipo.compras.map((compra) => (
-                      <li key={compra.id} className="py-3">
+                    {agruparCompras(equipo.compras).map((compra) => (
+                      <li key={`${compra.symbolId}-${compra.instanteId}`} className="py-3">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium text-gray-900">{compra.symbol.nombre}</p>
                           <p className="text-sm text-gray-500">{compra.cantidad} unidades</p>
@@ -88,8 +105,8 @@ const Saldos = () => {
                         <p className="text-sm text-gray-500 mt-1">
                           Comprada a ${compra.precioActual.toFixed(2)} cada una
                           <br />
-                          <span style={{ color: preciosMap[compra.symbolId].toFixed(2) < compra.precioActual.toFixed(2) ? 'green' : 'red' }}>
-                            Valor actual ${preciosMap[compra.symbolId].toFixed(2)}
+                          <span style={{ color: preciosMap[compra.symbolId].toFixed(2) < compra.precioActual.toFixed(2) ? 'red' : 'green' }}>
+                            Valor actual ${preciosMap[compra.symbolId]?.toFixed(2)}
                           </span>
                         </p>
                       </li>

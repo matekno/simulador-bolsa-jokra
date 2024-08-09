@@ -15,6 +15,7 @@ const Admin = () => {
   const [cantidad, setCantidad] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [cantidadVenta, setCantidadVenta] = useState('');
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -44,7 +45,7 @@ const Admin = () => {
           const res = await fetch(`/api/precios?instanteId=${currentInstanteId}&symbolId=${symbolId}`);
           const data = await res.json();
           if (data.precio) {
-            setPrecioActual(data.precio); 
+            setPrecioActual(data.precio);
           } else {
             setPrecioActual("");
           }
@@ -105,6 +106,35 @@ const Admin = () => {
     }
   };
 
+  const handleVenta = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/vender', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          equipoId: parseInt(equipoId),
+          symbolId: parseInt(symbolId),
+          cantidad: parseInt(cantidadVenta),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMensaje(`Venta realizada con éxito. Total vendido: $${data.totalVenta}`);
+      } else {
+        setMensaje(data.error || 'Error al realizar la venta');
+      }
+    } catch (error) {
+      setMensaje('Error al realizar la venta');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const handleChangeInstante = async (instanteId) => {
     setIsLoading(true);
     try {
@@ -115,7 +145,7 @@ const Admin = () => {
         },
         body: JSON.stringify({ instanteId: parseInt(instanteId, 10) }),
       });
-  
+
       const data = await res.json();
       if (res.ok) {
         setCurrentInstanteId(instanteId);
@@ -168,7 +198,7 @@ const Admin = () => {
         </div>
       )}
       <h1 className="text-3xl font-bold mb-8 text-center">Administración</h1>
-      
+
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Actualizar Instante</h2>
         <div className="flex items-center space-x-4">
@@ -194,7 +224,7 @@ const Admin = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-4">Realizar Compra</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,7 +292,76 @@ const Admin = () => {
           Realizar Compra
         </button>
       </div>
-      
+
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4">Realizar Venta</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block">
+              <span className="text-gray-700">Equipo Inversor:</span>
+              <select
+                onChange={(e) => setEquipoId(e.target.value)}
+                value={equipoId}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              >
+                <option value="">Seleccione un equipo</option>
+                {equipos.map((equipo) => (
+                  <option key={equipo.id} value={equipo.id}>
+                    {equipo.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label className="block">
+              <span className="text-gray-700">Acción a vender:</span>
+              <select
+                onChange={(e) => setSymbolId(e.target.value)}
+                value={symbolId}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              >
+                <option value="">Seleccione una acción</option>
+                {symbols.map((symbol) => (
+                  <option key={symbol.id} value={symbol.id}>
+                    {symbol.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label className="block">
+              <span className="text-gray-700">Precio actual:</span>
+              <input
+                type="text"
+                value={precioActual}
+                readOnly
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block">
+              <span className="text-gray-700">Cantidad a vender:</span>
+              <input
+                type="number"
+                value={cantidadVenta}
+                onChange={(e) => setCantidadVenta(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </label>
+          </div>
+        </div>
+        <button
+          onClick={handleVenta}
+          className="mt-4 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+        >
+          Realizar Venta
+        </button>
+      </div>
+
+
       {mensaje && (
         <div className="mt-4 p-4 rounded-md bg-yellow-100 border border-yellow-400 text-yellow-700">
           {mensaje}
