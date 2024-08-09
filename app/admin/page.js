@@ -26,7 +26,7 @@ const Admin = () => {
     const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/initialData');
+        const res = await fetch('/api/initialData', { next: { revalidate: 0 }});
         const data = await res.json();
         setEquipos(data.equipos);
         setInstantes(data.instantes);
@@ -47,7 +47,7 @@ const Admin = () => {
       if (currentInstanteId && symbolId) {
         setIsLoading(true);
         try {
-          const res = await fetch(`/api/precios?instanteId=${currentInstanteId}&symbolId=${symbolId}`);
+          const res = await fetch(`/api/precios?instanteId=${currentInstanteId}&symbolId=${symbolId}`, { next: { revalidate: 0 }});
           const data = await res.json();
           if (data.precio) {
             setPrecioActual(data.precio);
@@ -77,6 +77,7 @@ const Admin = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ instanteId: parseInt(instanteId, 10) }),
+        next: { revalidate: 0 },
       });
 
       const data = await res.json();
@@ -113,6 +114,7 @@ const Admin = () => {
             instanteId: parseInt(currentInstanteId),
             total,
           }),
+          next: { revalidate: 0 },
         });
 
         if (res.ok) {
@@ -144,6 +146,7 @@ const Admin = () => {
           symbolId: parseInt(symbolId),
           cantidad: parseInt(cantidadVenta),
         }),
+        next: { revalidate: 0 },
       });
 
       const data = await res.json();
@@ -171,6 +174,7 @@ const Admin = () => {
           equipoId: parseInt(equipoId),
           cantidad: parseFloat(cantidad),
         }),
+        next: { revalidate: 0 },
       });
   
       const data = await res.json();

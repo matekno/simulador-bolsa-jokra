@@ -12,7 +12,7 @@ const Saldos = () => {
   const fetchEquipos = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/equipos');
+      const response = await fetch('/api/equipos' , { next: { revalidate: 0 }});
       const data = await response.json();
       if (response.ok) {
         setEquipos(data.equipos || []);

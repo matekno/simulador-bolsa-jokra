@@ -16,6 +16,7 @@ const Pesificar = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ porcentaje }),
+        next: { revalidate: 0 },
       });
 
       const data = await res.json();
