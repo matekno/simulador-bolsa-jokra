@@ -9,25 +9,26 @@ const Saldos = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchEquipos = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/equipos');
-        const data = await response.json();
-        if (response.ok) {
-          setEquipos(data.equipos || []);
-          setCurrentInstante(data.currentInstante);
-          setPreciosMap(data.preciosMap || {});
-        } else {
-          setError(data.error || 'Error al obtener los datos');
-        }
-      } catch (err) {
-        setError('Error al obtener los datos');
-      } finally {
-        setIsLoading(false);
+  const fetchEquipos = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/equipos');
+      const data = await response.json();
+      if (response.ok) {
+        setEquipos(data.equipos || []);
+        setCurrentInstante(data.currentInstante);
+        setPreciosMap(data.preciosMap || {});
+      } else {
+        setError(data.error || 'Error al obtener los datos');
       }
-    };
+    } catch (err) {
+      setError('Error al obtener los datos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEquipos();
   }, []);
 
@@ -79,6 +80,14 @@ const Saldos = () => {
         {currentInstante && (
           <p className="text-xl text-gray-600 mb-8 text-center">Instante actual: {currentInstante.id}</p>
         )}
+        <div className="text-center mb-8">
+          <button
+            onClick={fetchEquipos}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            Actualizar Datos
+          </button>
+        </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {equipos.map((equipo) => (
             <div key={equipo.id} className="bg-white overflow-hidden shadow-lg rounded-lg divide-y divide-gray-200">
@@ -105,7 +114,7 @@ const Saldos = () => {
                         <p className="text-sm text-gray-500 mt-1">
                           Comprada a ${compra.precioActual.toFixed(2)} cada una
                           <br />
-                          <span style={{ color: preciosMap[compra.symbolId].toFixed(2) < compra.precioActual.toFixed(2) ? 'red' : 'green' }}>
+                          <span style={{ color: preciosMap[compra.symbolId]?.toFixed(2) < compra.precioActual.toFixed(2) ? 'red' : 'green' }}>
                             Valor actual ${preciosMap[compra.symbolId]?.toFixed(2)}
                           </span>
                         </p>
