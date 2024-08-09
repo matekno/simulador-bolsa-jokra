@@ -68,6 +68,40 @@ const Admin = () => {
     }
   };
 
+  const handleAgregarSaldo = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/addSaldo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          equipoId: parseInt(equipoId),
+          cantidad: parseFloat(cantidad),
+        }),
+      });
+  
+      const data = await res.json();
+      if (res.ok) {
+        setMensaje(`Saldo actualizado con éxito. Nuevo saldo: $${data.saldo.toFixed(2)}`);
+        // Actualizar el saldo localmente
+        setEquipos((prevEquipos) =>
+          prevEquipos.map((equipo) =>
+            equipo.id === parseInt(equipoId) ? { ...equipo, saldo: data.saldo } : equipo
+          )
+        );
+      } else {
+        setMensaje(data.error || 'Error al actualizar el saldo');
+      }
+    } catch (error) {
+      setMensaje('Error al actualizar el saldo');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
   const handleCompra = async () => {
     setIsLoading(true);
     const equipo = equipos.find((e) => e.id === parseInt(equipoId));
@@ -293,7 +327,7 @@ const Admin = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-lg shadow-md p-6 mt-8">
         <h2 className="text-xl font-semibold mb-4">Realizar Venta</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -360,6 +394,47 @@ const Admin = () => {
           Realizar Venta
         </button>
       </div>
+
+      <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+        <h2 className="text-xl font-semibold mb-4">Agregar Saldo</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block">
+              <span className="text-gray-700">Equipo:</span>
+              <select
+                onChange={(e) => setEquipoId(e.target.value)}
+                value={equipoId}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              >
+                <option value="">Seleccione un equipo</option>
+                {equipos.map((equipo) => (
+                  <option key={equipo.id} value={equipo.id}>
+                    {equipo.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label className="block">
+              <span className="text-gray-700">Cantidad a agregar:</span>
+              <input
+                type="number"
+                value={cantidad}
+                onChange={(e) => setCantidad(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              />
+            </label>
+          </div>
+        </div>
+        <button
+          onClick={handleAgregarSaldo}
+          className="mt-4 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+        >
+          Agregar Saldo
+        </button>
+      </div>
+
 
 
       {mensaje && (
