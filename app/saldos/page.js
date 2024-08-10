@@ -15,7 +15,8 @@ const Saldos = () => {
       const response = await fetch('/api/equipos' , { next: { revalidate: 0 }});
       const data = await response.json();
       if (response.ok) {
-        setEquipos(data.equipos || []);
+        const equiposOrdenados = (data.equipos || []).sort((a, b) => a.nombre.localeCompare(b.nombre));
+        setEquipos(equiposOrdenados);
         setCurrentInstante(data.currentInstante);
         setPreciosMap(data.preciosMap || {});
       } else {
@@ -76,10 +77,10 @@ const Saldos = () => {
         </div>
       )}
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">Saldo de Equipos</h1>
-        {currentInstante && (
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">Saldos de los equipos</h1>
+        {/* {currentInstante && (
           <p className="text-xl text-gray-600 mb-8 text-center">Instante actual: {currentInstante.id}</p>
-        )}
+        )} */}
         <div className="text-center mb-8">
           <button
             onClick={fetchEquipos}
@@ -100,10 +101,10 @@ const Saldos = () => {
                 </p>
               </div>
               <div className="px-4 py-5 sm:p-6">
-                <p className="text-sm font-medium text-gray-500">Saldo</p>
+                <p className="text-sm font-medium text-gray-500">Saldo:</p>
                 <p className="mt-1 text-lg text-gray-900">${equipo.saldo.toFixed(2)}</p>
                 <div className="mt-4">
-                  <h3 className="text-sm font-medium text-gray-500">Instrumentos</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Instrumentos:</h3>
                   <ul className="mt-2 divide-y divide-gray-200">
                     {agruparCompras(equipo.compras).map((compra) => (
                       <li key={`${compra.symbolId}-${compra.instanteId}`} className="py-3">
