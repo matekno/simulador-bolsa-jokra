@@ -174,7 +174,7 @@ const Admin = () => {
           equipoId: parseInt(equipoId),
           cantidad: parseFloat(cantidad),
         }),
-        next: { revalidate: 0 },
+        next: { revalidate: 0 }, 
       });
   
       const data = await res.json();
