@@ -6,7 +6,7 @@ const LoginForm = ({ onLogin }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === 'mogoliKita2019!') {
+    if (password === 'jokrim!!!') {
       onLogin();
     } else {
       setMensaje('Contraseña incorrecta');
